@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# C# / .NET
+bin/
+obj/
+*.user
+*.suo
+packages/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# General
+.DS_Store
+Thumbs.db
+.vscode/
+.specify/
+.github/
+specs/
+.idea/
+*.tmp
+*.swp
