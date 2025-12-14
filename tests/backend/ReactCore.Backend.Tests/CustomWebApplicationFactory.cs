@@ -9,6 +9,8 @@ namespace ReactCore.Tests
 {
     public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
     {
+        public string DatabaseName { get; } = $"InMemoryDbForTesting_{Guid.NewGuid():N}";
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -23,7 +25,7 @@ namespace ReactCore.Tests
 
                 services.AddDbContext<AppDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    options.UseInMemoryDatabase(DatabaseName);
                 });
             });
         }

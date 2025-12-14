@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using ReactCore.Backend.Models;
 using ReactCore.Backend.Services;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace ReactCore.Backend.Controllers;
 
@@ -10,24 +12,23 @@ namespace ReactCore.Backend.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IWebHostEnvironment _env;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IWebHostEnvironment env)
     {
         _authService = authService;
+        _env = env;
     }
 
+    /// <summary>
+    /// Logs a user in and returns access/refresh tokens.
+    /// </summary>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
-        }
-
-        // Basic email format validation (can be enhanced)
-        if (!new EmailAddressAttribute().IsValid(request.Email))
-        {
-            return BadRequest("Invalid email format.");
         }
 
         var result = await _authService.LoginAsync(request.Email, request.Password, HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
@@ -43,8 +44,8 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, // Set to true in production
-            SameSite = SameSiteMode.Strict,
+            Secure = !_env.IsDevelopment(),
+            SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
@@ -57,6 +58,9 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Refreshes the access token using the refresh token cookie.
+    /// </summary>
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
@@ -77,8 +81,8 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = !_env.IsDevelopment(),
+            SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
@@ -91,6 +95,9 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Logs out the user by revoking the refresh token.
+    /// </summary>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
