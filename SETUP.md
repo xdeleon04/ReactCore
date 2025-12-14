@@ -8,48 +8,84 @@
 
 ## Backend Setup
 
-1.  Navigate to `src/backend`:
+1. Navigate to `src/backend`:
+
     ```bash
     cd src/backend
     ```
-2.  Restore dependencies:
+
+2. Restore dependencies:
+
     ```bash
     dotnet restore
     ```
-3.  Update database (apply migrations):
+
+3. Update database (apply migrations):
+
     ```bash
     dotnet ef database update
     ```
-4.  Run the application:
+
+    Note: the backend also applies migrations on startup in development, but `dotnet ef database update` is the most explicit way to ensure your DB schema is up-to-date.
+
+4. Run the application:
+
     ```bash
     dotnet run
     ```
-    The backend will start on `http://localhost:5000` (http) and `https://localhost:5001` (https).
+
+    The backend will start on `http://localhost:5149` (http) by default.
+
+## Seed Data
+
+If the database is empty, the backend seeds:
+
+- Users: `admin@example.com` / `Admin123!`, `user@example.com` / `User123!`
+- A small set of sample products (electronics + sports)
 
 ## Frontend Setup
 
-1.  Navigate to `src/frontend`:
+1. Navigate to `src/frontend`:
+
     ```bash
     cd src/frontend
     ```
-2.  Install dependencies:
+
+2. Install dependencies:
+
     ```bash
     npm install
     ```
-3.  Run the development server:
+
+3. Run the development server:
+
     ```bash
     npm run dev
     ```
+
     The frontend will start on `http://localhost:5173` (or similar).
+
+### Configure API Base URL (optional)
+
+Frontend API calls default to `http://localhost:5149/api`. To override:
+
+1. Create `src/frontend/.env.local`
+2. Add:
+
+    ```env
+    VITE_API_BASE_URL=http://localhost:5149/api
+    ```
 
 ## Testing
 
 ### Backend Tests
+
 ```bash
 dotnet test tests/backend/ReactCore.Backend.Tests/ReactCore.Backend.Tests.csproj
 ```
 
 ### Frontend Tests
+
 ```bash
 cd src/frontend
 npm test

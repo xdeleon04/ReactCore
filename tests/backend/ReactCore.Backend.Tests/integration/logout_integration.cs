@@ -61,6 +61,7 @@ namespace ReactCore.Tests.Integration
             using var assertScope = _factory.Services.CreateScope();
             var assertDb = assertScope.ServiceProvider.GetRequiredService<AppDbContext>();
             var dbUser = await assertDb.Users.FirstOrDefaultAsync(u => u.Email == email);
+            dbUser.Should().NotBeNull();
             dbUser.RefreshToken.Should().BeNull();
             dbUser.RefreshTokenExpiryTime.Should().BeNull();
 

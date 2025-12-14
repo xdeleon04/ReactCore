@@ -22,12 +22,13 @@ public class RateLimitMiddleware
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("Too many login attempts"))
         {
-            _logger.LogWarning($"Rate limit exceeded: {ex.Message}");
+            const string errorMessage = "Too many login attempts. Please try again later.";
+            _logger.LogWarning("Login rate limit exceeded");
 
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
             context.Response.ContentType = "application/json";
 
-            var response = new { message = ex.Message };
+            var response = new { message = errorMessage };
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }

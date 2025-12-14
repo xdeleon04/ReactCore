@@ -20,6 +20,7 @@ namespace ReactCore.Backend.Tests.Integration;
 public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
+    private readonly string _dbName = $"InMemoryDbForTesting_{Guid.NewGuid():N}";
     private const string TestJwtKey = "SuperSecretKeyForTesting12345!@#$%";
     private const string TestIssuer = "TestIssuer";
     private const string TestAudience = "TestAudience";
@@ -50,7 +51,7 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
 
                 services.AddDbContext<AppDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    options.UseInMemoryDatabase(_dbName);
                 });
             });
         });

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import api, { setAccessToken, onLogout } from './api';
-import axios from 'axios';
+import { setAccessToken, onLogout } from './api';
 
 // Mock axios
 const mocks = vi.hoisted(() => ({
@@ -56,5 +55,5 @@ describe('api service', () => {
     onLogout(callback);
     // We can't easily trigger the interceptor without simulating a response error.
     // But we can verify the function runs without error.
-    });
+  });
 });

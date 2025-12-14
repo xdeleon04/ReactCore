@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AuthProvider, AuthContext } from './AuthContext';
-import api, { setAccessToken, onLogout } from '../services/api';
+import api, { setAccessToken } from '../services/api';
 import { jwtDecode } from 'jwt-decode';
 import { vi, describe, it, expect, beforeEach, afterEach, type Mock } from 'vitest';
 

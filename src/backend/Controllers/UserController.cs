@@ -17,6 +17,9 @@ public class UserController : ControllerBase
         _userRepository = userRepository;
     }
 
+    /// <summary>
+    /// Gets the authenticated user's profile.
+    /// </summary>
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {

@@ -2,6 +2,21 @@
 
 Fullstack application with React + ASP.NET Core.
 
+## Product Catalog (Feature 002)
+
+- Browse products: `GET /shop`
+- Product details: `GET /products/:id`
+- Cart drawer: available from the header cart badge
+- Checkout flow: `GET /checkout` (requires login)
+- Order confirmation: `GET /orders/:orderNumber`
+
+### Demo users (seeded)
+
+If the database is empty, the backend seeds two users:
+
+- Admin: `admin@example.com` / `Admin123!`
+- User: `user@example.com` / `User123!`
+
 ## Authentication & Security
 
 This project implements a secure JWT-based authentication system with the following features:

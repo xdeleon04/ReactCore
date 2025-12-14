@@ -12,7 +12,7 @@ export const onLogout = (cb: () => void) => {
 };
 
 const api = axios.create({
-  baseURL: 'http://localhost:5149/api', // Backend URL
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5149/api',
   withCredentials: true, // Important for cookies
 });
 
@@ -42,7 +42,7 @@ api.interceptors.response.use(
 
       try {
         // Call refresh endpoint
-        const response = await axios.post('http://localhost:5000/api/auth/refresh', {}, { withCredentials: true });
+        const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true });
         const newAccessToken = response.data.accessToken;
 
         setAccessToken(newAccessToken);
