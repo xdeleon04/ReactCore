@@ -1,3 +1,5 @@
-This folder is reserved for frontend test scaffolding.
+# Pruebas (Frontend)
 
-Note: The current frontend uses Vitest with colocated `*.test.tsx` files under `src/frontend/src/`.
+Esta carpeta está reservada para la estructura base de pruebas del frontend.
+
+Nota: El frontend actual usa Vitest con archivos `*.test.tsx` junto al código bajo `src/frontend/src/`.

@@ -1,1 +1,1 @@
-Admin dashboard contract test scaffolding (created by tasks T004).
+Estructura base para pruebas de contrato del panel de administración.

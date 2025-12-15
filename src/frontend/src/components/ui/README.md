@@ -1,8 +1,8 @@
-# UI Components (shadcn-style)
+# Componentes de UI (estilo shadcn)
 
-These components are local, Tailwind-styled primitives intended to be reused across pages.
+Estos componentes son primitivos locales estilizados con Tailwind, pensados para reutilizarse en distintas páginas.
 
-## Components
+## Componentes
 
 - `Button` ([button.tsx](button.tsx))
 - `Card`, `CardHeader`, `CardContent`, `CardFooter` ([card.tsx](card.tsx))
@@ -10,7 +10,7 @@ These components are local, Tailwind-styled primitives intended to be reused acr
 - `Dialog` primitives ([dialog.tsx](dialog.tsx))
 - `ToastProvider` ([ToastContext.tsx](../../context/ToastContext.tsx)) + `useToast` ([useToast.ts](../../hooks/useToast.ts))
 
-## Usage
+## Uso
 
 ### Button
 
@@ -29,9 +29,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 
 <Card>
 	<CardHeader>
-		<CardTitle>Title</CardTitle>
+		<CardTitle>Título</CardTitle>
 	</CardHeader>
-	<CardContent>Content</CardContent>
+	<CardContent>Contenido</CardContent>
 	<CardFooter>Footer actions</CardFooter>
 </Card>
 ```
@@ -41,7 +41,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 ```tsx
 import { Input } from '@/components/ui/input'
 
-<label htmlFor="email">Email</label>
+<label htmlFor="email">Correo</label>
 <Input id="email" type="email" autoComplete="email" />
 ```
 
@@ -64,8 +64,8 @@ import {
 	</DialogTrigger>
 	<DialogContent>
 		<DialogHeader>
-			<DialogTitle>Title</DialogTitle>
-			<DialogDescription>Description</DialogDescription>
+			<DialogTitle>Título</DialogTitle>
+			<DialogDescription>Descripción</DialogDescription>
 		</DialogHeader>
 		<DialogFooter>{/* actions */}</DialogFooter>
 	</DialogContent>
@@ -79,6 +79,6 @@ import { useToast } from '@/hooks/useToast'
 
 const toast = useToast()
 
-toast.success({ title: 'Saved' })
-toast.error({ title: 'Failed', description: 'Please try again.' })
+toast.success({ title: 'Guardado' })
+toast.error({ title: 'Error', description: 'Por favor, inténtalo de nuevo.' })
 ```
