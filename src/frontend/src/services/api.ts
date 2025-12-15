@@ -2,6 +2,7 @@ import axios from 'axios';
 
 let accessToken: string | null = null;
 let logoutCallback: (() => void) | null = null;
+let refreshPromise: Promise<string> | null = null;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
@@ -9,6 +10,19 @@ export const setAccessToken = (token: string | null) => {
 
 export const onLogout = (cb: () => void) => {
   logoutCallback = cb;
+};
+
+export const refreshAccessToken = async (): Promise<string> => {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(`${api.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true })
+      .then((response) => response.data.accessToken as string)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
 };
 
 const api = axios.create({
@@ -41,9 +55,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Call refresh endpoint
-        const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true });
-        const newAccessToken = response.data.accessToken;
+        const newAccessToken = await refreshAccessToken();
 
         setAccessToken(newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

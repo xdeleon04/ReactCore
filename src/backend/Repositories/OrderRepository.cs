@@ -49,4 +49,53 @@ public class OrderRepository : IOrderRepository
 
         return (items, total);
     }
+
+    public IQueryable<Order> QueryForAdmin(string? orderNumber, string? email, string? status, DateTime? startDate, DateTime? endDate)
+    {
+        var query = _context.Orders.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(orderNumber))
+        {
+            var needle = orderNumber.Trim().ToLowerInvariant();
+            query = query.Where(o => o.OrderNumber.ToLower().Contains(needle));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            query = query.Where(o => o.Email.ToLower().Contains(normalizedEmail));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var normalizedStatus = status.Trim();
+            query = query.Where(o => o.Status == normalizedStatus);
+        }
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(o => o.CreatedAt >= startDate.Value);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(o => o.CreatedAt <= endDate.Value);
+        }
+
+        return query;
+    }
+
+    public Task<Order?> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return _context.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+    }
+
+    public async Task UpdateAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

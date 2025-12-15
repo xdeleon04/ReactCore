@@ -18,26 +18,29 @@ interface CartContextType {
   subtotal: number;
   total: number;
   loading: boolean;
+  refresh: () => Promise<void>;
   addItem: (item: Omit<LocalCartItem, "quantity">, quantity: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   removeItem: (productId: number) => void;
   clear: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = "anon_cart_v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { value: items, setValue: setItems, remove } = useLocalStorage<LocalCartItem[]>(STORAGE_KEY, []);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
 
   const [serverItems, setServerItems] = useState<LocalCartItem[] | null>(null);
   const isSyncingRef = useRef(false);
-  const lastMergedUserIdRef = useRef<string | null>(null);
+  const isRefreshingRef = useRef(false);
+  const lastMergedUserKeyRef = useRef<string | null>(null);
 
   const effectiveItems = useMemo(() => (isAuthenticated ? (serverItems ?? []) : items), [isAuthenticated, items, serverItems]);
-  const loading = isAuthenticated && serverItems === null;
+  const loading = (isAuthenticated && serverItems === null) || (authLoading && items.length === 0);
 
   const addItem = useCallback(
     (item: Omit<LocalCartItem, "quantity">, quantity: number) => {
@@ -88,6 +91,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     [isAuthenticated, serverItems, setItems]
   );
+
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) return;
+    if (isSyncingRef.current) return;
+    if (isRefreshingRef.current) return;
+
+    isRefreshingRef.current = true;
+    try {
+      const cart = await getCart();
+      setServerItems(
+        cart.items.map((ci) => ({
+          productId: ci.productId,
+          productName: ci.productName,
+          unitPrice: ci.unitPrice,
+          imageUrl: ci.imageUrl ?? null,
+          quantity: ci.quantity,
+        }))
+      );
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  }, [isAuthenticated]);
 
   const updateQuantity = useCallback(
     (productId: number, quantity: number) => {
@@ -217,22 +244,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated) {
       setServerItems(null);
-      lastMergedUserIdRef.current = null;
+      lastMergedUserKeyRef.current = null;
       return;
     }
 
-    if (!user?.id) return;
     if (isSyncingRef.current) return;
+    // Avoid kicking off cart sync while auth is still initializing.
+    if (authLoading) return;
+
+    const userKey = (user?.id || user?.email || '__unknown_user__').trim();
 
     void (async () => {
       isSyncingRef.current = true;
       try {
-        if (items.length > 0 && lastMergedUserIdRef.current !== user.id) {
+        if (items.length > 0 && lastMergedUserKeyRef.current !== userKey) {
           for (const item of items) {
             await addToCart({ productId: item.productId, quantity: item.quantity });
           }
           remove();
-          lastMergedUserIdRef.current = user.id;
+          lastMergedUserKeyRef.current = userKey;
         }
 
         const cart = await getCart();
@@ -251,7 +281,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isSyncingRef.current = false;
       }
     })();
-  }, [isAuthenticated, items, remove, user?.id]);
+  }, [authLoading, isAuthenticated, items, remove, user?.email, user?.id]);
 
   const derived = useMemo(() => {
     const itemCount = effectiveItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -266,12 +296,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal: derived.subtotal,
       total: derived.total,
       loading,
+      refresh,
       addItem,
       updateQuantity,
       removeItem,
       clear,
     }),
-    [addItem, clear, derived.itemCount, derived.subtotal, derived.total, effectiveItems, loading, removeItem, updateQuantity]
+    [addItem, clear, derived.itemCount, derived.subtotal, derived.total, effectiveItems, loading, refresh, removeItem, updateQuantity]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

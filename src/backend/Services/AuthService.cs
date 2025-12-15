@@ -54,6 +54,12 @@ public class AuthService : IAuthService
             return null;
         }
 
+        if (!user.IsActive)
+        {
+            await _rateLimitService.TrackAttemptAsync(email, false, ipAddress);
+            throw new InvalidOperationException("Account has been deactivated.");
+        }
+
         if (user.IsLocked)
         {
             await _rateLimitService.TrackAttemptAsync(email, false, ipAddress);

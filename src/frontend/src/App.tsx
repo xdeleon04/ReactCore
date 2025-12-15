@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './state/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -7,66 +7,102 @@ import { ProductDetailPage } from './pages/ProductDetail';
 import { CheckoutPage } from './pages/Checkout';
 import { OrderConfirmationPage } from './pages/OrderConfirmation';
 import { ProtectedRoute } from './routes/ProtectedRoute';
+import { AdminRoutes } from './routes/AdminRoutes';
 import { CartProvider } from './state/CartContext';
+import { AdminProvider } from './state/admin/AdminContext';
 import { CartBadge } from './components/CartBadge';
 import { Cart } from './components/Cart';
 import { Toaster } from 'react-hot-toast';
 import './App.css';
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { NotificationListener } from './components/NotificationListener';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-function App() {
-  const [cartOpen, setCartOpen] = useState(false);
+function AppShell() {
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const openCart = useCallback(() => {
+    navigate('/cart');
+  }, [navigate]);
+
+  const closeCart = useCallback(() => {
+    if (location.pathname === '/cart') {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate('/shop', { replace: true });
+      }
+      return;
+    }
+    navigate('/shop');
+  }, [location.pathname, navigate]);
+
+  const cartIsOpen = location.pathname === '/cart';
+
+  return (
+    <ErrorBoundary>
+      <div className="app-container">
+        <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+          <a href="/dashboard" className="text-sm font-semibold text-gray-900 hover:text-gray-700">ReactCore</a>
+          <CartBadge onClick={openCart} />
+        </header>
+
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+
+          {/* Deep-linkable cart route */}
+          <Route path="/cart" element={<div />} />
+
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:orderNumber"
+            element={
+              <ProtectedRoute>
+                <OrderConfirmationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {AdminRoutes}
+
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+
+        <Cart open={cartIsOpen} onClose={closeCart} />
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Toaster position="top-right" />
-        <NotificationListener />
-        <Router>
-          <ErrorBoundary>
-            <div className="app-container">
-              <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-                <div className="text-sm font-semibold text-gray-900">ReactCore</div>
-                <CartBadge onClick={() => setCartOpen(true)} />
-              </header>
-
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/products/:id" element={<ProductDetailPage />} />
-                <Route
-                  path="/checkout"
-                  element={
-                    <ProtectedRoute>
-                      <CheckoutPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/orders/:orderNumber"
-                  element={
-                    <ProtectedRoute>
-                      <OrderConfirmationPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <DashboardPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-
-              <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
-            </div>
-          </ErrorBoundary>
-        </Router>
+        <AdminProvider>
+          <Toaster position="top-right" />
+          <NotificationListener />
+          <Router>
+            <AppShell />
+          </Router>
+        </AdminProvider>
       </CartProvider>
     </AuthProvider>
   );

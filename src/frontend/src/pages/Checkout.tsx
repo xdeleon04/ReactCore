@@ -5,7 +5,7 @@ import { EmptyState } from '../components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 
 export const CheckoutPage: React.FC = () => {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, loading } = useCart();
   const navigate = useNavigate();
 
   return (
@@ -15,7 +15,9 @@ export const CheckoutPage: React.FC = () => {
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <section className="rounded border border-gray-200 bg-white p-4">
           <h2 className="text-lg font-semibold text-gray-900">Order summary</h2>
-          {items.length === 0 ? (
+          {loading ? (
+            <div className="mt-3 text-sm text-gray-700">Loading your cart…</div>
+          ) : items.length === 0 ? (
             <div className="mt-3">
               <EmptyState
                 title="Your cart is empty"

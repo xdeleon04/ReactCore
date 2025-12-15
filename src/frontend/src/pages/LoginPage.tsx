@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Assuming react-router-dom is used
+import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
 
 export const LoginPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      const role = (user?.role || '').toLowerCase();
+      navigate(role === 'admin' ? '/admin/dashboard' : '/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user?.role, navigate]);
 
   return (
     <div className="page-container">

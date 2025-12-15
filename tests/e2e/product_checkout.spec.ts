@@ -1,21 +1,51 @@
 import { test, expect } from '@playwright/test';
+import { getE2EUser } from './testUsers';
 
 test.describe('Product + Cart + Checkout', () => {
-  test('user can add product to cart and place order', async ({ page }) => {
+  test.afterEach(async ({ page }) => {
+    try {
+      await page.request.post('http://localhost:5149/api/auth/logout');
+    } catch {
+      // ignore
+    }
+  });
+
+  test('user can add product to cart and place order', async ({ page }, testInfo) => {
+    const user = getE2EUser(testInfo);
+
     // Login
-    await page.goto('http://localhost:5173/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'Admin123!');
+    await page.goto('/login');
+    await page.fill('input[type="email"]', user.email);
+    await page.fill('input[type="password"]', user.password);
     await page.click('button[type="submit"]');
+
+    // Wait for login response
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/auth/login') && r.status() === 200,
+      { timeout: 30000 }
+    );
+
     await expect(page).toHaveURL('http://localhost:5173/dashboard');
     // Shop
-    await page.goto('http://localhost:5173/shop');
+    await page.goto('/shop');
     await expect(page.locator('text=Shop')).toBeVisible();
 
-    // Open first product
-    const firstProduct = page.locator('a[href^="/products/"]').first();
-    await expect(firstProduct).toBeVisible();
-    await firstProduct.click();
+    // Pick an in-stock product via the API so repeated runs don't flake when inventory changes.
+    const productsResp = await page.request.get('http://localhost:5149/api/products?take=50');
+    if (!productsResp.ok()) {
+      throw new Error(`Failed to load products: HTTP ${productsResp.status()} ${productsResp.statusText()}`);
+    }
+
+    const productsJson = (await productsResp.json()) as {
+      items: Array<{ id: number; status: string; stockQuantity: number }>;
+    };
+
+    const candidate = productsJson.items.find((p) => p.status !== 'out-of-stock' && p.stockQuantity > 0);
+    if (!candidate) {
+      throw new Error('No in-stock products available to test checkout. Reset inventory/DB seed and retry.');
+    }
+
+    await page.goto(`/products/${candidate.id}`);
 
     // Add to cart
     await page.click('button:has-text("Add to cart")');

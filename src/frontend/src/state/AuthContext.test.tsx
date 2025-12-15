@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AuthProvider, AuthContext } from './AuthContext';
-import api, { setAccessToken } from '../services/api';
+import api, { refreshAccessToken, setAccessToken } from '../services/api';
 import { jwtDecode } from 'jwt-decode';
 import { vi, describe, it, expect, beforeEach, afterEach, type Mock } from 'vitest';
 
@@ -13,6 +13,7 @@ vi.mock('../services/api', async () => {
     default: {
       post: vi.fn(),
     },
+    refreshAccessToken: vi.fn(),
     setAccessToken: vi.fn(),
     onLogout: vi.fn(),
   };
@@ -48,7 +49,7 @@ describe('AuthContext', () => {
 
 
   it('initializes with loading state and tries silent refresh', async () => {
-    (api.post as Mock).mockRejectedValue(new Error('No session'));
+    (refreshAccessToken as Mock).mockRejectedValue(new Error('No session'));
 
     render(
       <AuthProvider>
@@ -62,12 +63,17 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('loading')).toHaveTextContent('false');
     });
 
-    expect(api.post).toHaveBeenCalledWith('/auth/refresh');
+    expect(refreshAccessToken).toHaveBeenCalled();
   });
 
   it('logs in successfully', async () => {
-    (api.post as Mock).mockResolvedValueOnce({ data: { accessToken: 'fake-token' } }); // for silent refresh (fail)
-    (api.post as Mock).mockRejectedValueOnce(new Error('No session'));
+    (api.post as Mock).mockImplementation(async (url: string) => {
+      if (url === '/auth/logout') return { data: {} };
+      if (url === '/auth/login') return { data: { accessToken: 'new-token' } };
+      return { data: {} };
+    });
+
+    (refreshAccessToken as Mock).mockRejectedValue(new Error('No session'));
 
     // Wait for init
     render(
@@ -78,8 +84,6 @@ describe('AuthContext', () => {
 
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'));
 
-    // Setup login mocks
-    (api.post as Mock).mockResolvedValueOnce({ data: { accessToken: 'new-token' } });
     (jwtDecode as Mock).mockReturnValue({
       email: 'user@example.com',
       sub: '123',
@@ -100,7 +104,15 @@ describe('AuthContext', () => {
   });
 
   it('handles login failure', async () => {
-    (api.post as Mock).mockRejectedValueOnce(new Error('No session')); // init
+    (api.post as Mock).mockImplementation(async (url: string) => {
+      if (url === '/auth/logout') return { data: {} };
+      if (url === '/auth/login') {
+        throw { response: { data: { message: 'Invalid credentials' } } };
+      }
+      return { data: {} };
+    });
+
+    (refreshAccessToken as Mock).mockRejectedValue(new Error('No session'));
 
     render(
       <AuthProvider>
@@ -108,9 +120,6 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'));
-
-    // Setup login failure
-    (api.post as Mock).mockRejectedValueOnce({ response: { data: { message: 'Invalid credentials' } } });
 
     // Act
     await act(async () => {
@@ -122,7 +131,12 @@ describe('AuthContext', () => {
   });
 
   it('logs out successfully', async () => {
-    (api.post as Mock).mockRejectedValueOnce(new Error('No session')); // init
+    (api.post as Mock).mockImplementation(async (url: string) => {
+      if (url === '/auth/logout') return { data: {} };
+      return { data: {} };
+    });
+
+    (refreshAccessToken as Mock).mockRejectedValue(new Error('No session'));
 
     render(
       <AuthProvider>

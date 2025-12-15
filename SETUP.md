@@ -10,31 +10,30 @@
 
 1. Navigate to `src/backend`:
 
-    ```bash
-    cd src/backend
-    ```
+   ```bash
+   cd src/backend
+   ```
 
 2. Restore dependencies:
 
-    ```bash
-    dotnet restore
-    ```
+   ```bash
+   dotnet restore
+   ```
 
 3. Update database (apply migrations):
 
-    ```bash
-    dotnet ef database update
-    ```
+   ```bash
+   dotnet ef database update
+   ```
 
-    Note: the backend also applies migrations on startup in development, but `dotnet ef database update` is the most explicit way to ensure your DB schema is up-to-date.
-
+   Note: the backend also applies migrations on startup in development, but `dotnet ef database update` is the most explicit way to ensure your DB schema is up-to-date.
 4. Run the application:
 
-    ```bash
-    dotnet run
-    ```
+   ```bash
+   dotnet run
+   ```
 
-    The backend will start on `http://localhost:5149` (http) by default.
+   The backend will start on `http://localhost:5149` (http) by default.
 
 ## Seed Data
 
@@ -47,23 +46,23 @@ If the database is empty, the backend seeds:
 
 1. Navigate to `src/frontend`:
 
-    ```bash
-    cd src/frontend
-    ```
+   ```bash
+   cd src/frontend
+   ```
 
 2. Install dependencies:
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 3. Run the development server:
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
-    The frontend will start on `http://localhost:5173` (or similar).
+   The frontend will start on `http://localhost:5173` (or similar).
 
 ### Configure API Base URL (optional)
 
@@ -72,9 +71,9 @@ Frontend API calls default to `http://localhost:5149/api`. To override:
 1. Create `src/frontend/.env.local`
 2. Add:
 
-    ```env
-    VITE_API_BASE_URL=http://localhost:5149/api
-    ```
+   ```env
+   VITE_API_BASE_URL=http://localhost:5149/api
+   ```
 
 ## Testing
 
@@ -89,4 +88,26 @@ dotnet test tests/backend/ReactCore.Backend.Tests/ReactCore.Backend.Tests.csproj
 ```bash
 cd src/frontend
 npm test
+```
+
+## E2E Tests (Playwright)
+
+The Playwright test runner lives in `tests/e2e`.
+
+### Prerequisites (E2E)
+
+1. Ensure the frontend can reach the backend:
+
+   - Default is `http://localhost:5149/api` (see `VITE_API_BASE_URL` above)
+   - CORS allows `http://localhost:5173` by default via `Cors:FrontendOrigin`
+
+The E2E config will start both the backend (port 5149) and the frontend dev server (port 5173) automatically.
+
+### Run the tests
+
+```bash
+cd tests/e2e
+npm install
+npx playwright install
+npx playwright test
 ```

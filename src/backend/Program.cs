@@ -3,6 +3,7 @@ using ReactCore.Backend.Data;
 using ReactCore.Backend.Repositories;
 using ReactCore.Backend.Services;
 using ReactCore.Backend.Middleware;
+using ReactCore.Backend.Services.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IAdminActionRepository, AdminActionRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -43,6 +45,12 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 builder.Services.AddScoped<IRateLimitService, RateLimitService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+builder.Services.AddScoped<IAdminReportService, AdminReportService>();
+builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IAdminAuditLogService, AdminAuditLogService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -96,6 +104,28 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit = 100,
                 Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
+            });
+    });
+
+    options.AddPolicy("admin", httpContext =>
+    {
+        var permitLimit = builder.Configuration.GetValue<int?>("RateLimiting:Admin:PermitLimit") ?? 300;
+        var windowSeconds = builder.Configuration.GetValue<int?>("RateLimiting:Admin:WindowSeconds") ?? 60;
+
+        var userId = httpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var partitionKey = !string.IsNullOrWhiteSpace(userId)
+            ? $"admin-user:{userId}"
+            : $"admin-ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromSeconds(windowSeconds),
                 QueueLimit = 0,
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 AutoReplenishment = true
@@ -178,10 +208,32 @@ else
 
 app.UseHttpsRedirection();
 app.UseFrontendCors();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        var path = httpContext.Request.Path.Value ?? string.Empty;
+        diagnosticContext.Set("IsAdminEndpoint", path.StartsWith("/api/admin", StringComparison.OrdinalIgnoreCase));
+
+        var userId = httpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            diagnosticContext.Set("UserId", userId);
+        }
+
+        var role = httpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            diagnosticContext.Set("UserRole", role);
+        }
+    };
+});
 app.UseRouting();
 app.UseMiddleware<RateLimitMiddleware>();
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<IsActiveUserMiddleware>();
+app.UseMiddleware<AdminAuthorizationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

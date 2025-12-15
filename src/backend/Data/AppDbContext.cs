@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
     public DbSet<InventoryAudit> InventoryAudits { get; set; }
     public DbSet<NotificationPreferences> NotificationPreferences { get; set; }
 
+    public DbSet<AdminAction> AdminActions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -78,5 +80,39 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<NotificationPreferences>()
             .HasIndex(np => np.ProductId);
+
+        modelBuilder.Entity<AdminAction>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+
+            entity.Property(a => a.ActionType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(a => a.EntityType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(a => a.EntityId)
+                .IsRequired()
+                .HasMaxLength(128);
+
+            entity.Property(a => a.Timestamp)
+                .IsRequired();
+
+            entity.Property(a => a.IpAddress)
+                .HasMaxLength(45);
+
+            entity.Property(a => a.Reason)
+                .HasMaxLength(500);
+
+            entity.HasOne(a => a.Admin)
+                .WithMany(u => u.AdminActions)
+                .HasForeignKey(a => a.AdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(a => new { a.AdminUserId, a.Timestamp });
+            entity.HasIndex(a => a.Timestamp);
+        });
     }
 }

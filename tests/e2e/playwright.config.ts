@@ -71,9 +71,18 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm --prefix ..\\..\\src\\frontend\\ run dev -- --host localhost --port 5173',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'dotnet run --project ..\\..\\src\\backend\\ReactCore.Backend.csproj',
+      url: 'http://localhost:5149/weatherforecast',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: 'npm --prefix ..\\..\\src\\frontend\\ run dev -- --host localhost --port 5173',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });
