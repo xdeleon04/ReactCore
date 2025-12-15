@@ -17,6 +17,13 @@ If the database is empty, the backend seeds two users:
 - Admin: `admin@example.com` / `Admin123!`
 - User: `user@example.com` / `User123!`
 
+## Admin Dashboard (Feature 003)
+
+- Admin UI routes: `GET /admin` (Dashboard), `GET /admin/users`, `GET /admin/products`, `GET /admin/orders`, `GET /admin/reports`, `GET /admin/audit-logs`
+- Backend endpoints are under `/api/admin/*` and require `role=admin` in the JWT
+- Admin endpoints are rate limited (policy: `admin`) and all admin actions are recorded in the append-only audit log
+- Authenticated non-admin access to `/api/admin/*` returns `403` and is audited as `UnauthorizedAccessAttempt`
+
 ## Authentication & Security
 
 This project implements a secure JWT-based authentication system with the following features:

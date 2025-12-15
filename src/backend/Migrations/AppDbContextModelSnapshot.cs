@@ -22,6 +22,58 @@ namespace ReactCore.Backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ReactCore.Backend.Models.AdminAction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("AdminUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("AdminUserId", "Timestamp");
+
+                    b.ToTable("AdminActions");
+                });
+
             modelBuilder.Entity("ReactCore.Backend.Models.Cart", b =>
                 {
                     b.Property<int>("Id")
@@ -370,6 +422,9 @@ namespace ReactCore.Backend.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
@@ -396,6 +451,17 @@ namespace ReactCore.Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ReactCore.Backend.Models.AdminAction", b =>
+                {
+                    b.HasOne("ReactCore.Backend.Models.User", "Admin")
+                        .WithMany("AdminActions")
+                        .HasForeignKey("AdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
                 });
 
             modelBuilder.Entity("ReactCore.Backend.Models.Cart", b =>
@@ -522,6 +588,11 @@ namespace ReactCore.Backend.Migrations
                     b.Navigation("InventoryAudits");
 
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("ReactCore.Backend.Models.User", b =>
+                {
+                    b.Navigation("AdminActions");
                 });
 #pragma warning restore 612, 618
         }

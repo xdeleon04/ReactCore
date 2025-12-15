@@ -12,9 +12,12 @@ public static class DbInitializer
 
         // context.Database.Migrate(); // Usually handled in Program.cs or separate script
 
-        if (!context.Users.Any())
-        {
-            var users = new User[]
+        // NOTE: The auth implementation stores a single refresh token per user.
+        // Parallel E2E tests that log in as the same user will overwrite each other's refresh token
+        // and appear to "randomly log out". Seed multiple dedicated E2E users to allow isolation.
+         if (!context.Users.Any())
+         {
+            var requiredUsers = new List<User>
             {
                 new User
                 {
@@ -30,13 +33,27 @@ public static class DbInitializer
                 }
             };
 
-            foreach (var u in users)
+            const int e2eUserCount = 16;
+            for (var i = 1; i <= e2eUserCount; i++)
             {
-                context.Users.Add(u);
+                requiredUsers.Add(new User
+                {
+                    Email = $"e2e-user-{i}@example.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("User123!"),
+                    Role = "user"
+                });
+            }
+
+            foreach (var user in requiredUsers)
+            {
+                if (!context.Users.Any(u => u.Email == user.Email))
+                {
+                    context.Users.Add(user);
+                }
             }
 
             context.SaveChanges();
-        }
+         }
 
         if (!context.Products.Any())
         {
@@ -51,7 +68,7 @@ public static class DbInitializer
                     Category = "Electronics",
                     ImageUrl = "https://example.com/laptop.jpg",
                     Specifications = "{\"cpu\":\"Intel i7\",\"ram\":\"16GB\",\"storage\":\"512GB SSD\"}",
-                    StockQuantity = 10,
+                    StockQuantity = 100,
                     ReorderLevel = 5,
                     IsDeleted = false,
                     CreatedAt = now,
@@ -65,7 +82,7 @@ public static class DbInitializer
                     Category = "Electronics",
                     ImageUrl = "https://example.com/cable.jpg",
                     Specifications = "{\"length\":\"1m\",\"connector\":\"USB-C\"}",
-                    StockQuantity = 2,
+                    StockQuantity = 200,
                     ReorderLevel = 5,
                     IsDeleted = false,
                     CreatedAt = now,
@@ -79,7 +96,7 @@ public static class DbInitializer
                     Category = "Electronics",
                     ImageUrl = "https://example.com/stand.jpg",
                     Specifications = "{\"material\":\"aluminum\",\"adjustable\":true}",
-                    StockQuantity = 25,
+                    StockQuantity = 250,
                     ReorderLevel = 5,
                     IsDeleted = false,
                     CreatedAt = now,
@@ -93,7 +110,7 @@ public static class DbInitializer
                     Category = "Sports",
                     ImageUrl = "https://example.com/shoes.jpg",
                     Specifications = "{\"sizeRange\":\"7-12\",\"color\":\"Black\"}",
-                    StockQuantity = 12,
+                    StockQuantity = 120,
                     ReorderLevel = 5,
                     IsDeleted = false,
                     CreatedAt = now,
@@ -107,7 +124,7 @@ public static class DbInitializer
                     Category = "Sports",
                     ImageUrl = "https://example.com/bottle.jpg",
                     Specifications = "{\"capacity\":\"750ml\",\"insulated\":true}",
-                    StockQuantity = 30,
+                    StockQuantity = 300,
                     ReorderLevel = 5,
                     IsDeleted = false,
                     CreatedAt = now,

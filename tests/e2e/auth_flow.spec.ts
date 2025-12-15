@@ -1,17 +1,34 @@
 import { test, expect } from '@playwright/test';
+import { getE2EUser } from './testUsers';
 
 test.describe('Authentication Flow', () => {
-  test('should allow user to login, access protected route, refresh token, and logout', async ({ page }) => {
+  test.afterEach(async ({ page }) => {
+    try {
+      await page.request.post('http://localhost:5149/api/auth/logout');
+    } catch {
+      // ignore
+    }
+  });
+
+  test('should allow user to login, access protected route, refresh token, and logout', async ({ page }, testInfo) => {
+    const user = getE2EUser(testInfo);
+
     // 1. Login
-    await page.goto('http://localhost:5173/login');
-    await page.fill('input[type="email"]', 'user@example.com');
-    await page.fill('input[type="password"]', 'User123!');
+    await page.goto('/login');
+    await page.fill('input[type="email"]', user.email);
+    await page.fill('input[type="password"]', user.password);
     await page.click('button[type="submit"]');
+
+    // Wait for login response
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/auth/login') && r.status() === 200,
+      { timeout: 30000 }
+    );
 
     // Verify redirect to dashboard
     await expect(page).toHaveURL('http://localhost:5173/dashboard');
     await expect(page.locator('h1')).toHaveText('Dashboard');
-    await expect(page.locator('text=Welcome, user@example.com')).toBeVisible();
+    await expect(page.locator(`text=Welcome, ${user.email}`)).toBeVisible();
 
     // 2. Access Protected Route (Dashboard calls /api/user/profile)
     // This is implicitly verified by the dashboard loading user info
@@ -25,7 +42,7 @@ test.describe('Authentication Flow', () => {
 
     await page.reload();
     await expect(page.locator('h1')).toHaveText('Dashboard');
-    await expect(page.locator('text=Welcome, user@example.com')).toBeVisible();
+    await expect(page.locator(`text=Welcome, ${user.email}`)).toBeVisible();
 
     // 4. Logout
     await page.click('button:has-text("Logout")');
@@ -34,7 +51,7 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL('http://localhost:5173/login');
 
     // Verify protected route is no longer accessible
-    await page.goto('http://localhost:5173/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL('http://localhost:5173/login');
   });
 });

@@ -21,6 +21,10 @@ public class User
 
     public bool IsLocked { get; set; } = false;
 
+    public bool IsActive { get; set; } = true;
+
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+    public List<AdminAction> AdminActions { get; set; } = new();
 }

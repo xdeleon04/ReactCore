@@ -31,7 +31,19 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _authService.LoginAsync(request.Email, request.Password, HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+        (string AccessToken, string RefreshToken)? result;
+        try
+        {
+            result = await _authService.LoginAsync(request.Email, request.Password, HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Too many login attempts", StringComparison.OrdinalIgnoreCase))
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
 
         if (result == null)
         {
@@ -110,8 +122,8 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = !_env.IsDevelopment(),
+            SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(-1) // Expire immediately
         };
 

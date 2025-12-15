@@ -9,7 +9,7 @@ import { EmptyState } from './EmptyState';
 import { CartSkeleton } from './skeletons/CartSkeleton';
 
 export const Cart: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-  const { items, subtotal, itemCount, clear, loading } = useCart();
+  const { items, subtotal, itemCount, clear, loading, refresh } = useCart();
   const navigate = useNavigate();
 
   const [inventoryByProductId, setInventoryByProductId] = React.useState<
@@ -60,6 +60,11 @@ export const Cart: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose, open]);
 
+  React.useEffect(() => {
+    if (!open) return;
+    void refresh();
+  }, [open, refresh]);
+
   if (!open) return null;
 
   return (
@@ -105,9 +110,8 @@ export const Cart: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
             <button
               type="button"
               className="flex-1 rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400"
-              disabled={items.length === 0}
+              disabled={loading || items.length === 0}
               onClick={() => {
-                onClose();
                 navigate('/checkout');
               }}
             >

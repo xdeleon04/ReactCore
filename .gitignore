@@ -19,6 +19,7 @@ packages/
 *.exe
 *.pdb
 *.cache
+appsettings.*.json
 
 # General
 .DS_Store
