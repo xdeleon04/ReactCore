@@ -31,3 +31,7 @@ specs/
 .idea/
 *.tmp
 *.swp
+
+# Test results / coverage artifacts
+TestResults/
+**/TestResults/
