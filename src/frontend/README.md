@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# ReactCore Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de React + TypeScript + Vite (rolldown-vite) para el repositorio fullstack ReactCore.
 
-Currently, two official plugins are available:
+## Inicio Rápido
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Desde esta carpeta:
 
-## React Compiler
+- Instalar: `npm install`
+- Servidor de desarrollo: `npm run dev`
+- Lint: `npm run lint`
+- Compilación de producción: `npm run build`
+- Vista previa de compilación: `npm run preview`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Enrutamiento
 
-## Expanding the ESLint configuration
+Las rutas se definen en `src/App.tsx` y `src/routes/*`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Públicas: `/login`, `/shop`, `/products/:id`
+- Autenticadas: `/dashboard`, `/checkout`, `/orders/:orderNumber`
+- Admin (con control de rol): `/admin/*` (ver `src/routes/AdminRoutes.tsx`)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Diseño y Navegación
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+El shell de la aplicación es `src/components/layouts/MainLayout.tsx` con:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/components/features/Header.tsx` (navegación superior)
+- `src/components/features/Sidebar.tsx` (navegación izquierda en escritorio)
+
+Los enlaces de navegación de administrador aparecen cuando el usuario conectado es administrador. La barra lateral incluye una sección Admin dedicada con enlaces a:
+
+- `/admin/dashboard`
+- `/admin/users`
+- `/admin/products`
+- `/admin/orders`
+- `/admin/reports`
+- `/admin/api-usage`
+- `/admin/audit-logs`
+
+## Primitivos de UI (estilo shadcn)
+
+Los primitivos reutilizables de Tailwind se encuentran en `src/components/ui/*`.
+
+Ver `src/components/ui/README.md` para APIs de componentes y ejemplos.
+
+## Notificaciones (Toasts)
+
+Utiliza el wrapper de notificaciones de la aplicación (no importes `react-hot-toast` directamente en código de características):
+
+```tsx
+import { useToast } from '@/hooks/useToast'
+
+const toast = useToast()
+toast.success({ title: 'Guardado' })
+toast.error({ title: 'Error', description: 'Por favor, inténtalo de nuevo.' })
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+`ToastProvider` está montado en la raíz de la aplicación.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```

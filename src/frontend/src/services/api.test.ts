@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-import { setAccessToken, onLogout } from './api';
 
 // Mock axios
 const mocks = vi.hoisted(() => ({
@@ -27,13 +26,21 @@ describe('api service', () => {
   // We don't clear mocks because api.ts runs at import time and calls interceptors.use.
   // If we clear mocks, we lose the reference to the interceptor callback.
 
-  it('sets access token and uses it in interceptor', () => {
+  const importApi = async () => {
+    mocks.requestUse.mockClear()
+    vi.resetModules()
+    return await import('./api')
+  }
+
+  it('sets access token and uses it in interceptor', async () => {
+    const { setAccessToken } = await importApi()
     setAccessToken('test-token');
 
     // Get the interceptor callback
     // api.ts calls interceptors.request.use(callback, errorCallback)
     // So the first argument of the first call to requestUse is our callback
-    const interceptor = mocks.requestUse.mock.calls[0][0];
+    const interceptor = mocks.requestUse.mock.calls.at(-1)?.[0];
+    expect(interceptor).toBeTypeOf('function')
 
     const config = { headers: {} };
     const result = interceptor(config);
@@ -41,16 +48,19 @@ describe('api service', () => {
     expect(result.headers.Authorization).toBe('Bearer test-token');
   });
 
-  it('removes access token', () => {
+  it('removes access token', async () => {
+    const { setAccessToken } = await importApi()
     setAccessToken(null);
-    const interceptor = mocks.requestUse.mock.calls[0][0];
+    const interceptor = mocks.requestUse.mock.calls.at(-1)?.[0];
+    expect(interceptor).toBeTypeOf('function')
     const config = { headers: {} };
     const result = interceptor(config);
     expect(result.headers.Authorization).toBeUndefined();
   });
 
 
-  it('registers logout callback', () => {
+  it('registers logout callback', async () => {
+    const { onLogout } = await importApi()
     const callback = vi.fn();
     onLogout(callback);
     // We can't easily trigger the interceptor without simulating a response error.
