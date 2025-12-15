@@ -20,6 +20,8 @@ packages/
 *.pdb
 *.cache
 appsettings.*.json
+appsettings.Development.json
+appsettings.development.json
 
 # General
 .DS_Store
