@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 
 export const LoginPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -15,11 +16,16 @@ export const LoginPage: React.FC = () => {
   }, [isAuthenticated, user?.role, navigate]);
 
   return (
-    <div className="page-container">
-      <div className="login-page">
-        <h1>Welcome Back</h1>
-        <LoginForm />
-      </div>
-    </div>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Sign in</CardTitle>
+          <CardDescription>Use your email and password to continue.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginForm />
+        </CardContent>
+      </Card>
+    </main>
   );
 };
