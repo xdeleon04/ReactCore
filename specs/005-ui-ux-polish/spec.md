@@ -191,10 +191,10 @@ Users encounter error or empty states (no data, network failure, permission deni
 2. **Color Palette**: Blue-600 primary (#2563eb), slate-900 text (#0f172a), slate-100 background (#f1f5f9), with slate shades for accents
 3. **Breakpoints**: Mobile 375px, tablet 768px, desktop 1024px, using Tailwind's standard responsive prefixes (sm, md, lg, xl)
 4. **Fonts**: System font stack (Inter preferred, fallback to sans-serif) for better performance; no custom font files needed for MVP
-5. **Animations**: CSS transitions (300ms ease-in-out) for hover/active states, Framer Motion for complex page transitions or component animations
+5. **Animations**: CSS transitions only (300ms ease-in-out) for hover/active states, button presses, modals, and page transitions in MVP; Framer Motion deferred to P2 if complex animations prove necessary
 6. **Icons**: Heroicons or Lucide React (icon library) for consistency; all icon buttons have ARIA labels
 7. **Accessibility Testing**: Automated (Axe DevTools in CI), manual (NVDA/JAWS testing), and visual regression testing as part of PR review
-8. **Dark Mode**: Not required for MVP; light mode only, with optional dark mode as P3 future feature
+8. **Dark Mode**: Light mode is the MVP requirement (light-only implementation). Tailwind CSS and shadcn/ui components will be architected to support dark mode adoption in P3 (CSS variables, dark: utility classes prepared, color palette designed for both themes) without requiring component rewrites—infrastructure investment now, implementation deferred to P3
 9. **Responsive Strategy**: Mobile-first approach; start with 375px design, expand to tablet/desktop
 10. **Component Library**: shadcn/ui provides unstyled Radix UI components; customize via Tailwind utilities and CSS variables for branding
 
@@ -232,4 +232,11 @@ Feature is considered complete when:
 
 ---
 
-**Status**: Ready for `/speckit.plan` planning phase once approved
+## Clarifications Recorded *(decisions made December 15, 2025)*
+
+- Q: Should animations use CSS transitions only or adopt Framer Motion for complex interactions? → A: **CSS transitions only for MVP** (300ms Tailwind transitions for all interactive states). Framer Motion deferred to P2 if UX demands justify the additional dependency.
+- Q: Should dark mode CSS architecture be prepared now (with CSS vars) or deferred entirely? → A: **Prepare dark mode architecture in P1** (CSS variables, Tailwind dark: utility classes scaffolded, color palette designed for both themes) to enable P3 dark mode implementation without component rewrites. Light mode is the active implementation; dark mode infrastructure is an investment for future scaling.
+
+---
+
+**Status**: ✅ Ready for `/speckit.plan` planning phase
