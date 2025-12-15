@@ -35,6 +35,26 @@
 
    The backend will start on `http://localhost:5149` (http) by default.
 
+## External API (OpenWeatherMap) Configuration
+
+The weather widget uses OpenWeatherMap via the backend proxy. Configure the API key using standard .NET configuration overrides.
+
+### Recommended (environment variable)
+
+Set:
+
+```env
+ExternalApis__OpenWeatherMap__ApiKey=your_openweathermap_api_key
+```
+
+You can set this in your shell environment, a hosting provider, or user secrets.
+
+### Alternative (appsettings.Development.json)
+
+Update `src/backend/appsettings.Development.json` under:
+
+`ExternalApis:OpenWeatherMap:ApiKey`
+
 ## Seed Data
 
 If the database is empty, the backend seeds:
@@ -110,4 +130,11 @@ cd tests/e2e
 npm install
 npx playwright install
 npx playwright test
+```
+
+To run only the weather widget test:
+
+```bash
+cd tests/e2e
+npx playwright test external_api_weather.spec.ts
 ```

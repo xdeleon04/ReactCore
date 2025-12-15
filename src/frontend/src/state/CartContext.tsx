@@ -29,9 +29,10 @@ interface CartContextType {
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = "anon_cart_v1";
+const EMPTY_LOCAL_CART: LocalCartItem[] = [];
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { value: items, setValue: setItems, remove } = useLocalStorage<LocalCartItem[]>(STORAGE_KEY, []);
+  const { value: items, setValue: setItems, remove } = useLocalStorage<LocalCartItem[]>(STORAGE_KEY, EMPTY_LOCAL_CART);
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
 
   const [serverItems, setServerItems] = useState<LocalCartItem[] | null>(null);

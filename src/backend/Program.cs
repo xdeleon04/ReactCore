@@ -14,6 +14,8 @@ using Serilog.Events;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
+using ReactCore.Backend.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,25 @@ builder.Host.UseSerilog((context, _, loggerConfiguration) =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+builder.Services.Configure<ExternalApiOptions>(builder.Configuration.GetSection("ExternalApis:OpenWeatherMap"));
+
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024;
+});
+
+builder.Services.AddHttpClient("OpenWeatherMap", (serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<ExternalApiOptions>>().Value;
+
+    if (!string.IsNullOrWhiteSpace(options.BaseUrl))
+    {
+        client.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+    }
+
+    client.Timeout = TimeSpan.FromSeconds(Math.Max(1, options.TimeoutSeconds));
+});
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -51,6 +72,11 @@ builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IAdminAuditLogService, AdminAuditLogService>();
+
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<IExternalApiRateLimitingService, ExternalApiRateLimitingService>();
+builder.Services.AddScoped<IWeatherApiService, WeatherApiService>();
+builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

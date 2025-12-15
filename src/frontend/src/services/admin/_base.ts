@@ -4,6 +4,7 @@ export const adminApi = api;
 
 export const adminPath = {
   dashboardSummary: '/admin/dashboard/summary',
+  apiUsage: '/admin/api-usage',
   auditLogs: '/admin/audit-logs',
   users: '/admin/users',
   products: '/admin/products',
