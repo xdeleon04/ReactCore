@@ -6,6 +6,7 @@ import { ProductsPage } from '../pages/admin/Products';
 import { OrdersPage } from '../pages/admin/Orders';
 import { ReportsPage } from '../pages/admin/Reports';
 import { AuditLogsPage } from '../pages/admin/AuditLogs';
+import { ApiUsagePage } from '../pages/admin/ApiUsage';
 
 export const AdminRoutes = (
   <Route
@@ -18,6 +19,7 @@ export const AdminRoutes = (
     <Route path="products" element={<ProductsPage />} />
     <Route path="orders" element={<OrdersPage />} />
     <Route path="reports" element={<ReportsPage />} />
+    <Route path="api-usage" element={<ApiUsagePage />} />
     <Route path="audit-logs" element={<AuditLogsPage />} />
   </Route>
 );
