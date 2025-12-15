@@ -4,6 +4,8 @@ import { PriceRangeFilter } from '../components/PriceRangeFilter';
 import { ProductList } from '../components/ProductList';
 import type { ProductListResponse } from '../types/Product';
 import { getProducts } from '../services/productService';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 const DEFAULT_TAKE = 20;
 
@@ -74,19 +76,34 @@ export const Shop: React.FC = () => {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Shop</h1>
-        <p className="mt-1 text-sm text-gray-700">Browse products and filter by category and price.</p>
+    <main className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Products</h1>
+        <p className="mt-1 text-sm text-slate-700">Browse products and filter by category and price.</p>
       </header>
 
-      <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <CategoryFilter categories={categories} value={category} onChange={onCategoryChange} />
-        <PriceRangeFilter minPrice={minPrice} maxPrice={maxPrice} onChange={onPriceChange} />
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-label="Product filters">
+        <Card>
+          <CardHeader>
+            <CardTitle>Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CategoryFilter categories={categories} value={category} onChange={onCategoryChange} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Price</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PriceRangeFilter minPrice={minPrice} maxPrice={maxPrice} onChange={onPriceChange} />
+          </CardContent>
+        </Card>
       </section>
 
       {error ? (
-        <div role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error}
         </div>
       ) : null}
@@ -96,16 +113,16 @@ export const Shop: React.FC = () => {
       </section>
 
       <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
-        <button
+        <Button
           type="button"
-          className="rounded border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
+          variant="outline"
           onClick={() => setSkip(Math.max(0, skip - take))}
           disabled={!canPrev || loading}
         >
           Previous
-        </button>
+        </Button>
 
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-slate-700">
           {total > 0 ? (
             <span>
               Showing {Math.min(skip + 1, total)}–{Math.min(skip + take, total)} of {total}
@@ -115,14 +132,9 @@ export const Shop: React.FC = () => {
           )}
         </div>
 
-        <button
-          type="button"
-          className="rounded border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
-          onClick={() => setSkip(skip + take)}
-          disabled={!canNext || loading}
-        >
+        <Button type="button" variant="outline" onClick={() => setSkip(skip + take)} disabled={!canNext || loading}>
           Next
-        </button>
+        </Button>
       </nav>
     </main>
   );

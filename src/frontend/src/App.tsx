@@ -12,11 +12,12 @@ import { CartProvider } from './state/CartContext';
 import { AdminProvider } from './state/admin/AdminContext';
 import { CartBadge } from './components/CartBadge';
 import { Cart } from './components/Cart';
-import { Toaster } from 'react-hot-toast';
 import './App.css';
 import { useCallback } from 'react';
 import { NotificationListener } from './components/NotificationListener';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastProvider } from './context/ToastContext';
+import { MainLayout } from './components/layouts/MainLayout';
 
 function AppShell() {
   const location = useLocation();
@@ -42,12 +43,7 @@ function AppShell() {
 
   return (
     <ErrorBoundary>
-      <div className="app-container">
-        <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <a href="/dashboard" className="text-sm font-semibold text-gray-900 hover:text-gray-700">ReactCore</a>
-          <CartBadge onClick={openCart} />
-        </header>
-
+      <MainLayout headerRight={<CartBadge onClick={openCart} />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/shop" element={<Shop />} />
@@ -87,7 +83,7 @@ function AppShell() {
         </Routes>
 
         <Cart open={cartIsOpen} onClose={closeCart} />
-      </div>
+      </MainLayout>
     </ErrorBoundary>
   );
 }
@@ -97,11 +93,12 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <AdminProvider>
-          <Toaster position="top-right" />
-          <NotificationListener />
-          <Router>
-            <AppShell />
-          </Router>
+          <ToastProvider>
+            <NotificationListener />
+            <Router>
+              <AppShell />
+            </Router>
+          </ToastProvider>
         </AdminProvider>
       </CartProvider>
     </AuthProvider>

@@ -1,81 +1,84 @@
 # ReactCore
 
-Fullstack application with React + ASP.NET Core.
+Aplicación fullstack con React + ASP.NET Core.
 
-## Product Catalog (Feature 002)
+## Catálogo de Productos
 
-- Browse products: `GET /shop`
-- Product details: `GET /products/:id`
-- Cart drawer: available from the header cart badge
-- Checkout flow: `GET /checkout` (requires login)
-- Order confirmation: `GET /orders/:orderNumber`
+- Explorar productos: `GET /shop`
+- Detalles del producto: `GET /products/:id`
+- Carrito: disponible desde el icono del carrito en el encabezado
+- Flujo de pago: `GET /checkout` (requiere inicio de sesión)
+- Confirmación de pedido: `GET /orders/:orderNumber`
 
-### Demo users (seeded)
+### Usuarios de demostración (predeterminados)
 
-If the database is empty, the backend seeds two users:
+Si la base de datos está vacía, el backend carga dos usuarios:
 
 - Admin: `admin@example.com` / `Admin123!`
-- User: `user@example.com` / `User123!`
+- Usuario: `user@example.com` / `User123!`
 
-## Admin Dashboard (Feature 003)
+## Panel de Administración
 
-- Admin UI routes: `GET /admin` (Dashboard), `GET /admin/users`, `GET /admin/products`, `GET /admin/orders`, `GET /admin/reports`, `GET /admin/audit-logs`
-- Backend endpoints are under `/api/admin/*` and require `role=admin` in the JWT
-- Admin endpoints are rate limited (policy: `admin`) and all admin actions are recorded in the append-only audit log
-- Authenticated non-admin access to `/api/admin/*` returns `403` and is audited as `UnauthorizedAccessAttempt`
+- Rutas de la interfaz de administrador: `GET /admin` (Panel), `GET /admin/users`, `GET /admin/products`, `GET /admin/orders`, `GET /admin/reports`, `GET /admin/audit-logs`
+- Los endpoints del backend están bajo `/api/admin/*` y requieren `role=admin` en el JWT
+- Los endpoints de administrador están limitados por velocidad (política: `admin`) y todas las acciones de administrador se registran en el registro de auditoría de solo adición
+- El acceso no autenticado de administrador a `/api/admin/*` devuelve `403` y se registra como `UnauthorizedAccessAttempt`
 
-## External API Integration (Feature 004)
+## Integración de API Externa
 
-This feature proxies OpenWeatherMap through the backend and renders a weather widget on the user dashboard.
+Esta función actúa como proxy de OpenWeatherMap a través del backend y representa un widget de clima en el panel de usuario.
 
 ### Endpoints
 
-- Weather (authenticated): `GET /api/external/weather?location=London`
-- Admin quota monitoring (admin-only): `GET /api/admin/api-usage`
+- Clima (autenticado): `GET /api/external/weather?location=Santo Domingo`
+- Monitoreo de cuota de administrador (solo admin): `GET /api/admin/api-usage`
 
-### Configuration
+### Configuración
 
-- Set the OpenWeatherMap API key via environment variable: `ExternalApis__OpenWeatherMap__ApiKey`
-- Other settings are in `src/backend/appsettings.json` under `ExternalApis:OpenWeatherMap` (TTL, rate limit, circuit breaker)
+- Establece la clave API de OpenWeatherMap mediante variable de entorno: `ExternalApis__OpenWeatherMap__ApiKey`
+- Otras configuraciones están en `src/backend/appsettings.json` bajo `ExternalApis:OpenWeatherMap` (TTL, límite de velocidad, disyuntor)
 
-### Behavior
+### Comportamiento
 
-- Caches weather responses (default TTL: 30 minutes) with a 24-hour max-stale safety boundary
-- Tracks and enforces an hourly quota; admin API usage endpoint emits alerts at 90%+ usage
+- Almacena en caché las respuestas meteorológicas (TTL predeterminado: 30 minutos) con un límite de seguridad máximo de 24 horas
+- Rastrea e implementa una cuota por hora; el endpoint de uso de API de administrador emite alertas al 90%+ de uso
 
-### Example curl
+### Ejemplo curl
 
 ```bash
-# Weather (requires JWT)
+# Clima (requiere JWT)
 curl -H "Authorization: Bearer <token>" "http://localhost:5149/api/external/weather?location=London"
 
-# Admin quota status (requires admin JWT)
+# Estado de cuota de administrador (requiere JWT de administrador)
 curl -H "Authorization: Bearer <admin-token>" "http://localhost:5149/api/admin/api-usage"
 ```
 
-## Authentication & Security
+## Autenticación y Seguridad
 
-This project implements a secure JWT-based authentication system with the following features:
+Este proyecto implementa un sistema de autenticación seguro basado en JWT con las siguientes características:
 
-### Token Strategy
-- **Access Token**: Short-lived (15 minutes) JWT stored in memory (React Context). Used for API authorization via `Authorization: Bearer` header.
-- **Refresh Token**: Long-lived (7 days) opaque token stored in an **HttpOnly, Secure, SameSite=Strict** cookie. Used to obtain new access tokens transparently.
+### Estrategia de Token
 
-### Security Measures
-- **XSS Protection**: Access tokens are not stored in `localStorage` or `sessionStorage`, preventing theft via XSS.
-- **CSRF Protection**: Refresh token cookie uses `SameSite=Strict` to prevent CSRF attacks on the refresh endpoint.
-- **Token Rotation**: Refresh tokens are rotated (replaced) on every use. Old tokens are invalidated to detect theft.
-- **Rate Limiting**: Login attempts are limited to 5 per 15 minutes per email to prevent brute-force attacks.
-- **Password Security**: Passwords are hashed using **BCrypt** (work factor 12) and enforced to be strong (8+ chars, mixed case, number, special char).
+- **Token de Acceso**: JWT de corta duración (15 minutos) almacenado en memoria (Contexto de React). Se utiliza para autorización de API mediante el encabezado `Authorization: Bearer`.
+- **Token de Actualización**: Token opaco de larga duración (7 días) almacenado en una cookie **HttpOnly, Secure, SameSite=Strict**. Se utiliza para obtener nuevos tokens de acceso de forma transparente.
 
-### Auth Flow
-1.  **Login**: User posts credentials. Server validates and returns Access Token (JSON) + Refresh Token (Cookie).
-2.  **Access**: Client sends Access Token in header.
-3.  **Expiry**: When Access Token expires (401), client interceptor calls `/refresh`.
-4.  **Refresh**: Server validates cookie, rotates Refresh Token, returns new Access Token + new Cookie.
-5.  **Retry**: Client retries original request with new Access Token.
-6.  **Logout**: Client calls `/logout`. Server clears cookie and revokes token in DB.
+### Medidas de Seguridad
 
-## Setup
+- **Protección XSS**: Los tokens de acceso no se almacenan en `localStorage` o `sessionStorage`, lo que previene el robo mediante XSS.
+- **Protección CSRF**: La cookie del token de actualización utiliza `SameSite=Strict` para evitar ataques CSRF en el endpoint de actualización.
+- **Rotación de Token**: Los tokens de actualización se rotan (reemplazan) en cada uso. Los tokens antiguos se invalidan para detectar robos.
+- **Límite de Velocidad**: Los intentos de inicio de sesión se limitan a 5 por 15 minutos por correo electrónico para prevenir ataques de fuerza bruta.
+- **Seguridad de Contraseña**: Las contraseñas se cifran usando **BCrypt** (factor de trabajo 12) e imponen que sean seguras (8+ caracteres, mayúsculas y minúsculas, número, carácter especial).
 
-See [SETUP.md](SETUP.md) for instructions.
+### Flujo de Autenticación
+
+1. **Inicio de sesión**: El usuario publica credenciales. El servidor valida y devuelve Token de Acceso (JSON) + Token de Actualización (Cookie).
+2. **Acceso**: El cliente envía Token de Acceso en el encabezado.
+3. **Caducidad**: Cuando el Token de Acceso caduca (401), el interceptor del cliente llama a `/refresh`.
+4. **Actualización**: El servidor valida la cookie, rota el Token de Actualización, devuelve nuevo Token de Acceso + nueva Cookie.
+5. **Reintentar**: El cliente reintenta la solicitud original con el nuevo Token de Acceso.
+6. **Cerrar sesión**: El cliente llama a `/logout`. El servidor borra la cookie e invalida el token en la BD.
+
+## Configuración
+
+Consulta [SETUP.md](SETUP.md) para obtener instrucciones.

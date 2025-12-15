@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { validateEmail, validatePassword } from '../utils/validation';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 export const LoginForm: React.FC = () => {
   const { login, isLoading, error: apiError } = useAuth();
@@ -45,41 +47,59 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="login-form-container">
-      <h2>Login</h2>
-      {apiError && <div className="error-message" role="alert">{apiError}</div>}
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
+    <div className="space-y-4">
+      {apiError ? (
+        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
+          {apiError}
+        </div>
+      ) : null}
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <div className="space-y-1">
+          <label htmlFor="email" className="text-sm font-medium text-slate-900">
+            Email
+          </label>
+          <Input
             type="email"
             id="email"
             value={email}
             onChange={handleEmailChange}
             disabled={isLoading}
+            autoComplete="email"
             aria-invalid={!!emailError}
-            aria-describedby={emailError ? "email-error" : undefined}
+            aria-describedby={emailError ? 'email-error' : undefined}
           />
-          {emailError && <span id="email-error" className="error-text">{emailError}</span>}
+          {emailError ? (
+            <div id="email-error" className="text-sm text-red-700">
+              {emailError}
+            </div>
+          ) : null}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
+        <div className="space-y-1">
+          <label htmlFor="password" className="text-sm font-medium text-slate-900">
+            Password
+          </label>
+          <Input
             type="password"
             id="password"
             value={password}
             onChange={handlePasswordChange}
             disabled={isLoading}
+            autoComplete="current-password"
             aria-invalid={!!passwordError}
-            aria-describedby={passwordError ? "password-error" : undefined}
+            aria-describedby={passwordError ? 'password-error' : undefined}
           />
-          {passwordError && <span id="password-error" className="error-text">{passwordError}</span>}
+          {passwordError ? (
+            <div id="password-error" className="text-sm text-red-700">
+              {passwordError}
+            </div>
+          ) : null}
         </div>
 
-        <button type="submit" disabled={!isFormValid || isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
+        <Button type="submit" className="w-full" disabled={!isFormValid} isLoading={isLoading} loadingText="Logging in...">
+          Sign in
+        </Button>
       </form>
     </div>
   );

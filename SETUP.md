@@ -1,129 +1,125 @@
-# Project Setup Guide
+# Guía de Configuración del Proyecto
 
-## Prerequisites
+## Requisitos Previos
 
 - .NET 8 SDK
 - Node.js 18+
-- SQL Server (LocalDB or full instance)
+- SQL Server (LocalDB o instancia completa)
 
-## Backend Setup
+## Configuración del Backend
 
-1. Navigate to `src/backend`:
+1. Navega a `src/backend`:
 
    ```bash
    cd src/backend
    ```
-
-2. Restore dependencies:
+2. Restaura las dependencias:
 
    ```bash
    dotnet restore
    ```
-
-3. Update database (apply migrations):
+3. Actualiza la base de datos (aplica migraciones):
 
    ```bash
    dotnet ef database update
    ```
 
-   Note: the backend also applies migrations on startup in development, but `dotnet ef database update` is the most explicit way to ensure your DB schema is up-to-date.
-4. Run the application:
+   Nota: el backend también aplica migraciones al iniciar en modo desarrollo, pero `dotnet ef database update` es la forma más explícita de asegurar que tu esquema de BD esté actualizado.
+4. Ejecuta la aplicación:
 
    ```bash
    dotnet run
    ```
 
-   The backend will start on `http://localhost:5149` (http) by default.
+   El backend iniciará en `http://localhost:5149` (http) por defecto.
 
-## External API (OpenWeatherMap) Configuration
+## Configuración de API Externa (OpenWeatherMap)
 
-The weather widget uses OpenWeatherMap via the backend proxy. Configure the API key using standard .NET configuration overrides.
+El widget de clima utiliza OpenWeatherMap a través del proxy del backend. Configura la clave API usando anulaciones de configuración estándar de .NET.
 
-### Recommended (environment variable)
+### Recomendado (variable de entorno)
 
-Set:
+Establece:
 
 ```env
-ExternalApis__OpenWeatherMap__ApiKey=your_openweathermap_api_key
+ExternalApis__OpenWeatherMap__ApiKey=tu_clave_openweathermap_api
 ```
 
-You can set this in your shell environment, a hosting provider, or user secrets.
+Puedes configurar esto en tu entorno de shell, proveedor de alojamiento o secretos de usuario.
 
-### Alternative (appsettings.Development.json)
+### Alternativa (appsettings.Development.json)
 
-Update `src/backend/appsettings.Development.json` under:
+Actualiza `src/backend/appsettings.Development.json` en:
 
 `ExternalApis:OpenWeatherMap:ApiKey`
 
-## Seed Data
+## Datos de Inicialización
 
-If the database is empty, the backend seeds:
+Si la base de datos está vacía, el backend genera:
 
-- Users: `admin@example.com` / `Admin123!`, `user@example.com` / `User123!`
-- A small set of sample products (electronics + sports)
+- Usuarios: `admin@example.com` / `Admin123!`, `user@example.com` / `User123!`
+- Un pequeño conjunto de productos de ejemplo (electrónica + deportes)
 
-## Frontend Setup
+## Configuración del Frontend
 
-1. Navigate to `src/frontend`:
+1. Navega a `src/frontend`:
 
    ```bash
    cd src/frontend
    ```
-
-2. Install dependencies:
+2. Instala las dependencias:
 
    ```bash
    npm install
    ```
-
-3. Run the development server:
+3. Ejecuta el servidor de desarrollo:
 
    ```bash
    npm run dev
    ```
 
-   The frontend will start on `http://localhost:5173` (or similar).
+   El frontend iniciará en `http://localhost:5173` (o similar).
 
-### Configure API Base URL (optional)
+### Configura la URL Base de la API (opcional)
 
-Frontend API calls default to `http://localhost:5149/api`. To override:
+Las llamadas a la API del frontend usan por defecto `http://localhost:5149/api`. Para anular:
 
-1. Create `src/frontend/.env.local`
-2. Add:
+1. Crea `src/frontend/.env.local`
+2. Añade:
 
    ```env
    VITE_API_BASE_URL=http://localhost:5149/api
    ```
 
-## Testing
+## Pruebas
 
-### Backend Tests
+### Pruebas del Backend
 
 ```bash
 dotnet test tests/backend/ReactCore.Backend.Tests/ReactCore.Backend.Tests.csproj
 ```
 
-### Frontend Tests
+### Pruebas del Frontend
 
 ```bash
 cd src/frontend
 npm test
 ```
 
-## E2E Tests (Playwright)
+## Pruebas E2E (Playwright)
 
-The Playwright test runner lives in `tests/e2e`.
+El ejecutor de pruebas Playwright se encuentra en `tests/e2e`.
 
-### Prerequisites (E2E)
+### Requisitos Previos (E2E)
 
-1. Ensure the frontend can reach the backend:
+1. Asegúrate de que el frontend pueda alcanzar el backend:
 
-   - Default is `http://localhost:5149/api` (see `VITE_API_BASE_URL` above)
-   - CORS allows `http://localhost:5173` by default via `Cors:FrontendOrigin`
+   - El valor por defecto es `http://localhost:5149/api` (ver `VITE_API_BASE_URL` arriba)
+   - CORS permite `http://localhost:5173` por defecto a través de `Cors:FrontendOrigin`
 
-The E2E config will start both the backend (port 5149) and the frontend dev server (port 5173) automatically.
+La configuración de E2E iniciará automáticamente tanto el backend (puerto 5149) como el servidor de desarrollo del frontend (puerto 5173).
 
-### Run the tests
+### Ejecuta las pruebas
 
 ```bash
 cd tests/e2e
@@ -132,7 +128,7 @@ npx playwright install
 npx playwright test
 ```
 
-To run only the weather widget test:
+Para ejecutar solo la prueba del widget de clima:
 
 ```bash
 cd tests/e2e
