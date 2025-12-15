@@ -28,10 +28,6 @@ Thumbs.db
 .specify/
 .github/
 specs/
-!specs/004-external-api/
-!specs/004-external-api/**
-!specs/005-ui-ux-polish/
-!specs/005-ui-ux-polish/**
 .idea/
 *.tmp
 *.swp
