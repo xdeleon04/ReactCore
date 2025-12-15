@@ -24,6 +24,35 @@ If the database is empty, the backend seeds two users:
 - Admin endpoints are rate limited (policy: `admin`) and all admin actions are recorded in the append-only audit log
 - Authenticated non-admin access to `/api/admin/*` returns `403` and is audited as `UnauthorizedAccessAttempt`
 
+## External API Integration (Feature 004)
+
+This feature proxies OpenWeatherMap through the backend and renders a weather widget on the user dashboard.
+
+### Endpoints
+
+- Weather (authenticated): `GET /api/external/weather?location=London`
+- Admin quota monitoring (admin-only): `GET /api/admin/api-usage`
+
+### Configuration
+
+- Set the OpenWeatherMap API key via environment variable: `ExternalApis__OpenWeatherMap__ApiKey`
+- Other settings are in `src/backend/appsettings.json` under `ExternalApis:OpenWeatherMap` (TTL, rate limit, circuit breaker)
+
+### Behavior
+
+- Caches weather responses (default TTL: 30 minutes) with a 24-hour max-stale safety boundary
+- Tracks and enforces an hourly quota; admin API usage endpoint emits alerts at 90%+ usage
+
+### Example curl
+
+```bash
+# Weather (requires JWT)
+curl -H "Authorization: Bearer <token>" "http://localhost:5149/api/external/weather?location=London"
+
+# Admin quota status (requires admin JWT)
+curl -H "Authorization: Bearer <admin-token>" "http://localhost:5149/api/admin/api-usage"
+```
+
 ## Authentication & Security
 
 This project implements a secure JWT-based authentication system with the following features:

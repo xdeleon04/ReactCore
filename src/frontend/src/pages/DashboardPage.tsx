@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { WeatherWidget } from '../components/WeatherWidget';
+import toast from 'react-hot-toast';
 
 interface UserProfile {
   id: string;
@@ -50,6 +52,13 @@ export const DashboardPage: React.FC = () => {
             <p><strong>Joined:</strong> {new Date(profile.createdAt).toLocaleDateString()}</p>
           </div>
         )}
+
+        <div className="mt-6 max-w-sm">
+          <WeatherWidget
+            location="Santo Domingo"
+            onError={() => toast.error('Unable to load weather data')}
+          />
+        </div>
       </div>
     </div>
   );

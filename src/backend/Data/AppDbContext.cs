@@ -23,6 +23,10 @@ public class AppDbContext : DbContext
 
     public DbSet<AdminAction> AdminActions { get; set; }
 
+    public DbSet<ExternalApiCall> ExternalApiCalls { get; set; }
+    public DbSet<ApiQuotaUsage> ApiQuotaUsages { get; set; }
+    public DbSet<CacheEntry> CacheEntries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -113,6 +117,24 @@ public class AppDbContext : DbContext
 
             entity.HasIndex(a => new { a.AdminUserId, a.Timestamp });
             entity.HasIndex(a => a.Timestamp);
+        });
+
+        modelBuilder.Entity<ApiQuotaUsage>(entity =>
+        {
+            entity.HasIndex(x => new { x.ApiName, x.PeriodStart }).IsUnique();
+            entity.Property(x => x.RowVersion).IsRowVersion();
+        });
+
+        modelBuilder.Entity<ExternalApiCall>(entity =>
+        {
+            entity.HasIndex(x => x.Timestamp);
+            entity.HasIndex(x => new { x.ApiName, x.Timestamp });
+        });
+
+        modelBuilder.Entity<CacheEntry>(entity =>
+        {
+            entity.HasIndex(x => new { x.ApiName, x.CacheKey }).IsUnique();
+            entity.HasIndex(x => x.ExpiresAt);
         });
     }
 }
