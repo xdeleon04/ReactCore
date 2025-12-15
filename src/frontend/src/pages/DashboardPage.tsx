@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { WeatherWidget } from '../components/WeatherWidget';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {

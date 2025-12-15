@@ -1,18 +1,9 @@
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Toaster, toast as hotToast } from 'react-hot-toast'
 import type { Toast } from 'react-hot-toast'
 
-import type { ToastMessage, ToastVariant } from '@/components/ui/toast'
-
-type ToastApi = {
-  show: (variant: ToastVariant, message: ToastMessage) => void
-  success: (message: ToastMessage) => void
-  error: (message: ToastMessage) => void
-  info: (message: ToastMessage) => void
-  warning: (message: ToastMessage) => void
-}
-
-const ToastContext = createContext<ToastApi | null>(null)
+import type { ToastMessage } from '@/components/ui/toast'
+import { ToastContext, type ToastApi } from '@/context/toast-context'
 
 function ToastBody({ title, description }: ToastMessage) {
   return (
@@ -78,13 +69,4 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <Toaster position="top-right" />
     </ToastContext.Provider>
   )
-}
-
-export function useToast(): ToastApi {
-  const value = useContext(ToastContext)
-  if (!value) {
-    throw new Error('useToast must be used within ToastProvider')
-  }
-
-  return value
 }
