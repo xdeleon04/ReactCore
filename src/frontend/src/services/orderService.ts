@@ -11,12 +11,19 @@ export async function getOrder(orderNumber: string): Promise<Order> {
   return response.data;
 }
 
-export function isCreateOrderConflict(error: unknown): error is { response: { status: number; data: CreateOrderConflictResponse } } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'response' in error &&
-    typeof (error as any).response?.status === 'number' &&
-    (error as any).response?.status === 409
-  );
+type AxiosLikeError<TData> = {
+  response?: {
+    status?: number
+    data?: TData
+  }
+}
+
+export function isCreateOrderConflict(
+  error: unknown
+): error is { response: { status: number; data: CreateOrderConflictResponse } } {
+  if (typeof error !== 'object' || error === null) return false
+  if (!('response' in error)) return false
+
+  const maybe = error as AxiosLikeError<CreateOrderConflictResponse>
+  return maybe.response?.status === 409
 }

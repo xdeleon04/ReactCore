@@ -8,7 +8,7 @@ These components are local, Tailwind-styled primitives intended to be reused acr
 - `Card`, `CardHeader`, `CardContent`, `CardFooter` ([card.tsx](card.tsx))
 - `Input` ([input.tsx](input.tsx))
 - `Dialog` primitives ([dialog.tsx](dialog.tsx))
-- `ToastProvider` / `useToast` ([ToastContext.tsx](../../context/ToastContext.tsx))
+- `ToastProvider` ([ToastContext.tsx](../../context/ToastContext.tsx)) + `useToast` ([useToast.ts](../../hooks/useToast.ts))
 
 ## Usage
 
@@ -75,7 +75,7 @@ import {
 ### Toasts
 
 ```tsx
-import { useToast } from '@/context/ToastContext'
+import { useToast } from '@/hooks/useToast'
 
 const toast = useToast()
 

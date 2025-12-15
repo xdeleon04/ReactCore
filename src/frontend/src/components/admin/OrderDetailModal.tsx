@@ -1,15 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '../../hooks/useToast';
 import type { AdminOrderDetail } from '../../types/admin/Order';
 import { getOrderDetail, updateOrderStatus } from '../../services/admin/adminOrderService';
 
-function getApiErrorMessage(error: any, fallback: string): string {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.message ||
-    fallback
-  );
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error !== 'object' || error === null) return fallback;
+
+  const err = error as {
+    message?: unknown;
+    response?: {
+      data?: unknown;
+    };
+  };
+
+  const data = err.response?.data;
+  if (typeof data === 'object' && data !== null) {
+    const maybeMessage = (data as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) return maybeMessage;
+
+    const maybeError = (data as { error?: unknown }).error;
+    if (typeof maybeError === 'string' && maybeError.trim().length > 0) return maybeError;
+  }
+
+  if (typeof err.message === 'string' && err.message.trim().length > 0) return err.message;
+  return fallback;
 }
 
 export const OrderDetailModal: React.FC<{
@@ -18,6 +32,7 @@ export const OrderDetailModal: React.FC<{
   onClose: () => void;
   onUpdated?: () => void;
 }> = ({ orderId, open, onClose, onUpdated }) => {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detail, setDetail] = useState<AdminOrderDetail | null>(null);
@@ -37,7 +52,7 @@ export const OrderDetailModal: React.FC<{
       const d = await getOrderDetail(orderId);
       setDetail(d);
       setNextStatus(d.allowedStatusTransitions[0] ?? '');
-    } catch (e: any) {
+    } catch (e: unknown) {
       setError(getApiErrorMessage(e, 'Unable to load order details.'));
     } finally {
       setLoading(false);
@@ -59,7 +74,7 @@ export const OrderDetailModal: React.FC<{
         setDetail(d);
         setNextStatus(d.allowedStatusTransitions[0] ?? '');
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         if (cancelled) return;
         setError(getApiErrorMessage(e, 'Unable to load order details.'));
       })
@@ -89,10 +104,10 @@ export const OrderDetailModal: React.FC<{
         reason: reason.trim() || undefined,
       });
 
-      toast.success('Order status updated');
+      toast.success({ title: 'Order status updated' });
       await load();
       onUpdated?.();
-    } catch (e: any) {
+    } catch (e: unknown) {
       setUpdateError(getApiErrorMessage(e, 'Unable to update order status.'));
     } finally {
       setUpdating(false);

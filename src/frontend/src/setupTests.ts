@@ -56,7 +56,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return []
   }
   unobserve() {}
-} as any
+} as unknown as typeof IntersectionObserver
 
 // Mock ResizeObserver for responsive components
 global.ResizeObserver = class ResizeObserver {
@@ -64,7 +64,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any
+} as unknown as typeof ResizeObserver
 
 // Mock scrollIntoView which doesn't work in jsdom
 Element.prototype.scrollIntoView = vi.fn()
@@ -131,7 +131,7 @@ const originalWarn = console.warn
 
 beforeAll(() => {
   // Suppress React 19 specific warnings if needed
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     const message = args[0]?.toString() || ''
 
     // Suppress specific known warnings
@@ -145,7 +145,7 @@ beforeAll(() => {
     originalError.call(console, ...args)
   }
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     const message = args[0]?.toString() || ''
 
     // Suppress specific known warnings

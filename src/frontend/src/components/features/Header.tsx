@@ -2,12 +2,15 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
+import { useAdmin } from '@/state/admin/useAdmin'
 
 export type HeaderProps = {
   right?: React.ReactNode
 }
 
 export const Header: React.FC<HeaderProps> = ({ right }) => {
+  const { isAdmin } = useAdmin()
+
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-slate-200 bg-white">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4">
@@ -50,6 +53,20 @@ export const Header: React.FC<HeaderProps> = ({ right }) => {
             >
               Checkout
             </NavLink>
+
+            {isAdmin ? (
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) =>
+                  cn(
+                    'rounded px-2 py-1 transition duration-300 hover:bg-slate-100',
+                    isActive ? 'bg-slate-100 text-slate-900' : 'text-slate-700'
+                  )
+                }
+              >
+                Admin
+              </NavLink>
+            ) : null}
           </nav>
         </div>
 

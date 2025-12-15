@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useId, useMemo, useRef } from 'react'
 
 type DialogSize = 'sm' | 'md' | 'lg'
 
@@ -128,13 +128,16 @@ export default function Dialog({
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
   const prevOpenRef = useRef<boolean>(open)
 
+  const reactId = useId()
+
   const ids = useMemo(() => {
-    const base = `dialog-${Math.random().toString(36).slice(2)}`
+    const safeId = reactId.replace(/:/g, '')
+    const base = `dialog-${safeId}`
     return {
       titleId: `${base}-title`,
       descriptionId: `${base}-description`,
     }
-  }, [])
+  }, [reactId])
 
   useEffect(() => {
     if (prevOpenRef.current !== open) {

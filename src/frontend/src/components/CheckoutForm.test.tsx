@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CheckoutForm } from './CheckoutForm';
+import type { CreateOrderRequest } from '../types/Order';
 
 const navigate = vi.fn();
 
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<any>('react-router-dom');
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => navigate,
@@ -31,7 +32,7 @@ vi.mock('../services/cartService', () => ({
 
 const createOrder = vi.fn();
 vi.mock('../services/orderService', () => ({
-  createOrder: (req: any) => createOrder(req),
+  createOrder: (req: CreateOrderRequest) => createOrder(req),
   isCreateOrderConflict: () => false,
 }));
 

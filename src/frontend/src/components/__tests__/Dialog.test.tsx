@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Dialog from '../Dialog'
-import Button from '../Button'
 
 describe('Dialog Component', () => {
   describe('Rendering', () => {
@@ -232,7 +231,6 @@ describe('Dialog Component', () => {
 
       const buttons = screen.getAllByRole('button')
       const firstButton = buttons[0]
-      const lastButton = buttons[buttons.length - 1]
 
       firstButton.focus()
       expect(firstButton).toHaveFocus()

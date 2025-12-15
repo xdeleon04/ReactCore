@@ -123,7 +123,18 @@ export const handlers = [
   http.get('/api/products/:id', ({ params }) => {
     const { id } = params
 
-    const products: Record<string, any> = {
+    type MockProduct = {
+      id: string
+      name: string
+      description: string
+      price: number
+      category: string
+      imageUrl: string
+      stock: number
+      reviews: unknown[]
+    }
+
+    const products: Record<string, MockProduct> = {
       '1': {
         id: '1',
         name: 'Laptop',
